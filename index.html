@@ -1,1 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Costos de Fabricación</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        input { width: 100%; box-sizing: border-box; }
+        .total { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Calculadora de Costos y Precios de Fabricación</h1>
+    <p>Ingresa datos por producto. Los cálculos son automáticos.</p>
+    <table id="productosTable">
+        <thead>
+            <tr>
+                <th>Nombre del Producto</th>
+                <th>Materiales Usados</th>
+                <th>Costo de Materiales ($)</th>
+                <th>Mano de Obra (Horas)</th>
+                <th>Costo por Hora ($)</th>
+                <th>Costo Total Mano de Obra ($)</th>
+                <th>Costos Indirectos ($)</th>
+                <th>Costo Total Fabricación ($)</th>
+                <th>% Ganancia (ej. 0.25)</th>
+                <th>Precio Venta Recomendado ($)</th>
+                <th>Ganancia Neta ($)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="text" placeholder="Ej. Mesa de Madera"></td>
+                <td><input type="text" placeholder="Ej. Madera, Tornillos"></td>
+                <td><input type="number" class="costoMateriales" value="15"></td>
+                <td><input type="number" class="horas" value="4"></td>
+                <td><input type="number" class="costoHora" value="12"></td>
+                <td class="costoManoObra">48</td>
+                <td><input type="number" class="costosIndirectos" value="10"></td>
+                <td class="costoFabricacion">73</td>
+                <td><input type="number" class="porcentajeGanancia" value="0.25"></td>
+                <td class="precioVenta">91.25</td>
+                <td class="gananciaNeta">18.25</td>
+            </tr>
+        </tbody>
+    </table>
+    <button onclick="agregarProducto()">Agregar Producto</button>
+    <h2>Resumen Total</h2>
+    <p>Ganancia Neta Total: <span id="totalGanancia">18.25</span> USD</p>
 
+    <script>
+        function calcular(row) {
+            const costoMateriales = parseFloat(row.querySelector('.costoMateriales').value) || 0;
+            const horas = parseFloat(row.querySelector('.horas').value) || 0;
+            const costoHora = parseFloat(row.querySelector('.costoHora').value) || 0;
+            const costosIndirectos = parseFloat(row.querySelector('.costosIndirectos').value) || 0;
+            const porcentajeGanancia = parseFloat(row.querySelector('.porcentajeGanancia').value) || 0;
+
+            const costoManoObra = horas * costoHora;
+            const costoFabricacion = costoMateriales + costoManoObra + costosIndirectos;
+            const precioVenta = costoFabricacion * (1 + porcentajeGanancia);
+            const gananciaNeta = precioVenta - costoFabricacion;
+
+            row.querySelector('.costoManoObra').textContent = costoManoObra.toFixed(2);
+            row.querySelector('.costoFabricacion').textContent = costoFabricacion.toFixed(2);
+            row.querySelector('.precioVenta').textContent = precioVenta.toFixed(2);
+            row.querySelector('.gananciaNeta').textContent = gananciaNeta.toFixed(2);
+
+            actualizarTotal();
+        }
+
+        function actualizarTotal() {
+            const ganancias = document.querySelectorAll('.gananciaNeta');
+            let total = 0;
+            ganancias.forEach(g => total += parseFloat(g.textContent) || 0);
+            document.getElementById('totalGanancia').textContent = total.toFixed(2);
+        }
+
+        function agregarProducto() {
+            const table = document.getElementById('productosTable').querySelector('tbody');
+            const newRow = table.rows[0].cloneNode(true);
+            newRow.querySelectorAll('input').forEach(input => input.value = '');
+            newRow.querySelectorAll('.costoManoObra, .costoFabricacion, .precioVenta, .gananciaNeta').forEach(td => td.textContent = '0');
+            table.appendChild(newRow);
+            newRow.querySelectorAll('input').forEach(input => input.addEventListener('input', () => calcular(newRow)));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('tbody tr').forEach(row => {
+                row.querySelectorAll('input').forEach(input => input.addEventListener('input', () => calcular(row)));
+            });
+            calcular(document.querySelector('tbody tr')); // Calcula inicial
+        });
+    </script>
+</body>
+</html>
